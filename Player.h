@@ -1,34 +1,86 @@
 #pragma once
 
 #include <string>
+#include <vector>
 #include "Entity.h"
-#include "Room.h"
+#include "Item.h"
+#include "Sword.h"
+
+class Room;
 
 class Player : public Entity {
 private:
-    const Room* m_pCurrentRoom;
-    std::string m_name;
+	using Items = std::vector<Item*>;
+	Items m_items;
+
+	Room* m_pCurrentRoom;
+	std::string m_name;
 
 public:
-    Player() { }
+	Player() { }
 
-    void operator+=(const std::string& name) {
-        m_name.append(name);
-    }
+	Player(const Player& originalPlayer) {
+		m_pCurrentRoom = originalPlayer.m_pCurrentRoom;
+		m_name = originalPlayer.m_name;
+	}
 
-    void SetName(const std::string& name) {
-        m_name = name;
-    }
+	Player& operator=(const Player& originalPlayer) {
+		m_pCurrentRoom = originalPlayer.m_pCurrentRoom;
+		m_name = originalPlayer.m_name;
+		return *this;
+	}
 
-    const std::string GetName() const {
-        return m_name;
-    }
+	Player(Player&& tempPlayer)	{
+		m_pCurrentRoom = tempPlayer.m_pCurrentRoom;
+		m_name = tempPlayer.m_name;
 
-    void SetCurrentRoom(const Room* pCurrentRoom) {
-        m_pCurrentRoom = pCurrentRoom;
-    }
+		tempPlayer.m_pCurrentRoom = nullptr;
+		m_name.clear();
+	}
 
-    const Room* GetCurrentRoom() const {
-        return m_pCurrentRoom;
-    }
+	Player& operator=(Player&& tempPlayer) {
+		if (this != &tempPlayer) {
+			m_pCurrentRoom = tempPlayer.m_pCurrentRoom;
+			m_name = tempPlayer.m_name;
+
+			tempPlayer.m_pCurrentRoom = nullptr;
+			m_name.clear();
+		}
+
+		return *this;
+	}
+
+	void SetName(const std::string& name) {
+		m_name = name;
+	}
+
+	const std::string& GetName() const {
+		return m_name;
+	}
+
+	void SetCurrentRoom(Room* pCurrentRoom) {
+		m_pCurrentRoom = pCurrentRoom;
+	}
+
+	Room* GetCurrentRoom() const {
+		return m_pCurrentRoom;
+	}
+
+	void AddItem(const Item* item) {
+		m_items.push_back(const_cast<Item*>(item));
+	}
+
+	bool HasWeapon() {
+		bool hasWeapon = false;
+
+		for (const Item* item : m_items) {
+			const Sword* sword = dynamic_cast<const Sword*>(item);
+			if (sword != nullptr) {
+				hasWeapon = true;
+				break;
+			}
+		}
+
+		return hasWeapon;
+	}
 };

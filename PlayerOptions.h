@@ -5,6 +5,8 @@ enum class PlayerOptions {
     GoSouth,
     GoEast,
     GoWest,
+    OpenChest,
+    AttackEnemy,
     Quit,
     None
 };

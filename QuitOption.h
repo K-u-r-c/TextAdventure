@@ -1,14 +1,17 @@
 #pragma once
 
 #include "Option.h"
+#include "PlayerOptions.h"
+#include <iostream>
 
 class QuitOption : public Option {
 private:
-    bool m_shouldQuit;
+	bool m_shouldQuit;
 
 public:
-    QuitOption(const std::string& outputText) : Option(PlayerOptions::Quit, outputText), m_shouldQuit(false) { }
+	QuitOption(const std::string& outputText)
+		: Option(PlayerOptions::Quit, outputText), m_shouldQuit(false) { }
 
-    bool ShouldQuit() const { return m_shouldQuit; }
-    virtual bool Evaluate(const std::string& optionText, Player& player);
+	bool ShouldQuit() const { return m_shouldQuit; }
+	virtual void Evaluate(Player& player);
 };
