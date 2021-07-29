@@ -1,6 +1,8 @@
 #pragma once
 
 #include "AttackEnemyOption.h"
+#include "EventHandler.h"
+#include "EventManager.h"
 #include "Chest.h"
 #include "Enemy.h"
 #include "MoveOption.h"
@@ -14,7 +16,7 @@
 #include <array>
 #include <map>
 
-class Game {
+class Game : public EventHandler {
 private:
     static const unsigned int m_numberOfRooms = 4;
     using Rooms = std::array<Room, m_numberOfRooms>;
@@ -37,6 +39,8 @@ private:
     Enemy m_dragon;
     Enemy m_orc;
 
+    bool m_playerQuit{ false };
+
     void InitializeRooms();
     void WelcomePlayer();
     void GivePlayerOptions() const;
@@ -45,5 +49,8 @@ private:
 
 public:
     Game();
+
     void RunGame();
+    
+    virtual void HandleEvent(const Event* pEvent);
 };

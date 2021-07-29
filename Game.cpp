@@ -1,9 +1,22 @@
 #include "Game.h"
+#include "SDBMHash.h"
+#include "EventManager.h"
 #include <iostream>
 #include <sstream>
 #include <cassert>
 
 using namespace std;
+
+namespace {
+	constexpr char* const QuitEventString = "QuitEvent";
+	constexpr int QuitEventStringLength =
+#ifndef constexpr
+		constexpr_strlen(QuitEventString);
+#else
+		(int)9;
+#endif
+	constexpr int QuitEvent = SDBMCalculator<QuitEventStringLength>::CalculateValue(QuitEventString);
+}
 
 Game::Game() : m_attackDragonOption(&m_dragon, "Attack Dragon")
 	, m_attackOrcOption(&m_orc, "Attack Orc")
@@ -88,29 +101,41 @@ PlayerOptions Game::EvaluateInput(stringstream& playerInputStream) {
     return chosenOption;
 }
 
+void Game::HandleEvent(const Event* pEvent) {
+    if(pEvent->GetID() == QuitEvent) {
+        m_playerQuit = true;
+    }
+}
+
 void Game::RunGame() {
+    new EventManager();
+
+    RegisterEvent(QuitEvent);
+    AttachEvent(QuitEvent, this);
+
     InitializeRooms();
 
     WelcomePlayer();
 
     bool playerWon = false;
-    bool playerQuit = false;
-    while(playerQuit == false && playerWon == false) {
+    while(m_playerQuit == false && playerWon == false) {
         GivePlayerOptions();
 
         stringstream playerInputStream;
         GetPlayerInput(playerInputStream);
 
-        PlayerOptions selectedOption = EvaluateInput(playerInputStream);
-        playerQuit = selectedOption == PlayerOptions::Quit;
+        EvaluateInput(playerInputStream);
 
         playerWon = m_dragon.IsAlive() == false && m_orc.IsAlive() == false;
     }
 
-    if(playerWon = true) {
-        cout << "Congratulations, you rid the dungeon of monsters!" << endl;
-        cout << "Type goodbye to end" << endl;
+    if(playerWon == true) {
+        cout << "Congratulations, you rid the dungeon of monsters!\n";
+        cout << "Type goodbye to end\n";
         std::string input;
-        cin >>input;
+        cin >> input;
     }
+
+    DetachEvent(QuitEvent, this);
+    delete EventManager::GetSingletonPtr();
 }

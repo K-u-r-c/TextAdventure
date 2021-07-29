@@ -11,20 +11,17 @@ void MoveOption::Evaluate(Player& player) {
 	} else {
 		const char* strDirection = "North";
 		switch (m_chosenOption)	{
-		case PlayerOptions::GoEast:	{
+			case PlayerOptions::GoEast:
 				strDirection = "East";
-			}
-			break;
+				break;
 
-		case PlayerOptions::GoSouth: {
+			case PlayerOptions::GoSouth:
 				strDirection = "South";
-			}
-			break;
+				break;
 
-		case PlayerOptions::GoWest:	{
+			case PlayerOptions::GoWest:
 				strDirection = "West";
-			}
-			break;
+				break;
 		}
 
 		std::cout << "There is no room to the " << "\n\n";
