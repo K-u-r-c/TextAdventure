@@ -23,7 +23,6 @@ void MoveOption::Evaluate(Player& player) {
 				strDirection = "West";
 				break;
 		}
-
 		std::cout << "There is no room to the " << "\n\n";
 	}
 }
