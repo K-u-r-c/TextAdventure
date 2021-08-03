@@ -9,35 +9,34 @@
 #include "OpenChestOption.h"
 #include "Option.h"
 #include "Player.h"
-#include "PlayerOptions.h"
 #include "QuitOption.h"
 #include "Room.h"
 #include "Sword.h"
 #include <array>
 #include <map>
 
-class Game : public EventHandler {
+class Game : public EventHandler, public QuitObserver {
 private:
     static const unsigned int m_numberOfRooms = 4;
-    using Rooms = std::array<Room, m_numberOfRooms>;
-    Rooms m_rooms;
+	using Rooms = std::array<Room::Pointer, m_numberOfRooms>;
+	Rooms m_rooms;
 
     Player m_player;
 
-    AttackEnemyOption m_attackDragonOption;
-    AttackEnemyOption m_attackOrcOption;
-    MoveOption m_moveNorthOption;
-    MoveOption m_moveEastOption;
-    MoveOption m_moveSouthOption;
-    MoveOption m_moveWestOption;
-    OpenChestOption m_openSwordChest;
-    QuitOption m_quitOption;
+    Option::Pointer m_attackDragonOption;
+    Option::Pointer m_attackOrcOption;
+    Option::Pointer m_moveNorthOption;
+    Option::Pointer m_moveEastOption;
+    Option::Pointer m_moveSouthOption;
+    Option::Pointer m_moveWestOption;
+    Option::Pointer m_openSwordChest;
+    Option::Pointer m_quitOption;
 
     Sword m_sword;
     Chest m_swordChest;
 
-    Enemy m_dragon;
-    Enemy m_orc;
+    using Enemies = std::vector<Enemy::Pointer>;
+    Enemies m_enemies;
 
     bool m_playerQuit{ false };
 
@@ -49,8 +48,12 @@ private:
 
 public:
     Game();
+    ~Game();
 
     void RunGame();
     
     virtual void HandleEvent(const Event* pEvent);
+
+    //From QuitObserver
+    virtual void OnQuit();
 };

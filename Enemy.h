@@ -1,13 +1,12 @@
 #pragma once
 
 #include "Entity.h"
+#include "EnemyFactory.h"
+#include <memory>
 
 class Enemy	: public Entity {
 public:
-	enum class EnemyType {
-		Dragon,
-		Orc
-	};
+	using Pointer = std::shared_ptr<Enemy>;
 
 private:
 	EnemyType m_type;
@@ -15,6 +14,10 @@ private:
 
 public:
 	Enemy(EnemyType type) : m_type{ type } { }
+
+	EnemyType GetType() const {
+		return m_type;
+	}
 
 	bool IsAlive() const {
 		return m_alive;

@@ -1,11 +1,16 @@
 #pragma once
 
-#include "PlayerOptions.h"
+#include "OptionFactory.h"
+#include "Visitable.h"
+#include <memory>
 #include <string>
 
 class Player;
 
-class Option {
+class Option : public Visitable {
+public:
+	using Pointer = std::shared_ptr<Option>;
+
 protected:
 	PlayerOptions m_chosenOption;
 	std::string	m_outputText;
@@ -16,10 +21,6 @@ public:
 
 	const std::string& GetOutputText() const {
 		return m_outputText;
-	}
-
-	PlayerOptions GetChosenOption() const {
-		return m_chosenOption;
 	}
 
 	virtual void Evaluate(Player& player) = 0;

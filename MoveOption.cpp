@@ -3,8 +3,8 @@
 #include "MoveOption.h"
 
 void MoveOption::Evaluate(Player& player) {
-	const Room* pPlayerCurrentRoom = player.GetCurrentRoom();
-	Room* pNewRoom = pPlayerCurrentRoom->GetRoom(m_directionToMove);
+	const Room::Pointer pPlayerCurrentRoom = player.GetCurrentRoom();
+	Room::Pointer pNewRoom = pPlayerCurrentRoom->GetRoom(m_directionToMove);
 	if (pNewRoom != nullptr) {
 		player.SetCurrentRoom(pNewRoom);
 		std::cout << "You have chosen to " << m_outputText << "\n\n";

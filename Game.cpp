@@ -1,6 +1,7 @@
 #include "Game.h"
 #include "SDBMHash.h"
 #include "EventManager.h"
+#include "EvaluateVisitor.h"
 #include <iostream>
 #include <sstream>
 #include <cassert>
@@ -18,47 +19,64 @@ namespace {
 	constexpr int QuitEvent = SDBMCalculator<QuitEventStringLength>::CalculateValue(QuitEventString);
 }
 
-Game::Game() : m_attackDragonOption(&m_dragon, "Attack Dragon")
-	, m_attackOrcOption(&m_orc, "Attack Orc")
-	, m_moveNorthOption(Room::JoiningDirections::North, PlayerOptions::GoNorth, "Go North")
-	, m_moveEastOption(Room::JoiningDirections::East, PlayerOptions::GoEast, "Go East")
-	, m_moveSouthOption(Room::JoiningDirections::South, PlayerOptions::GoSouth, "Go South")
-	, m_moveWestOption(Room::JoiningDirections::West, PlayerOptions::GoWest, "Go West")
-	, m_openSwordChest(&m_swordChest, "Open Chest")
-	, m_quitOption("Quit")
-	, m_swordChest(&m_sword)
-	, m_dragon(Enemy::EnemyType::Dragon)
-	, m_orc(Enemy::EnemyType::Orc) { }
+Game::Game() 
+    : m_attackDragonOption{ CreateOption(PlayerOptions::AttackEnemy) }
+	, m_attackOrcOption{ CreateOption(PlayerOptions::AttackEnemy) }
+	, m_moveNorthOption{ CreateOption(PlayerOptions::GoNorth) }
+	, m_moveEastOption{ CreateOption(PlayerOptions::GoEast) }
+	, m_moveSouthOption{ CreateOption(PlayerOptions::GoSouth) }
+	, m_moveWestOption{ CreateOption(PlayerOptions::GoWest) }
+	, m_openSwordChest{ CreateOption(PlayerOptions::OpenChest) }
+	, m_quitOption{ CreateOption(PlayerOptions::Quit) }
+	, m_swordChest{ &m_sword } {
+        static_cast<OpenChestOption*>(m_openSwordChest.get())->SetChest(&m_swordChest);
+
+        m_enemies.emplace_back(CreateEnemy(EnemyType::Dragon));
+        static_cast<AttackEnemyOption*>(m_attackDragonOption.get())->SetEnemy(m_enemies[0]);
+
+        m_enemies.emplace_back(CreateEnemy(EnemyType::Orc));
+        static_cast<AttackEnemyOption*>(m_attackOrcOption.get())->SetEnemy(m_enemies[1]);
+
+        static_cast<QuitOption*>(m_quitOption.get())->AddObserver(this);
+}
+
+Game::~Game() {
+    static_cast<QuitOption*>(m_quitOption.get())->RemoveObserver(this);
+}
 
 void Game::InitializeRooms() {
-    //Room 0 heads North to Room 1
-    m_rooms[0].AddRoom(Room::JoiningDirections::North, &(m_rooms[1]));
-    m_rooms[0].AddStaticOption(&m_moveNorthOption);
-    m_rooms[0].AddStaticOption(&m_quitOption);
-    m_rooms[0].AddDynamicOption(&m_openSwordChest);
+	for (auto& roomPointer : m_rooms) {
+		roomPointer.reset(new Room());
+	}
 
-    //Room 1 heads East to Room 2, South to Room 0 and West to Room 3
-    m_rooms[1].AddRoom(Room::JoiningDirections::East, &(m_rooms[2]));
-    m_rooms[1].AddStaticOption(&m_moveEastOption);
-    m_rooms[1].AddRoom(Room::JoiningDirections::South, &(m_rooms[0]));
-    m_rooms[1].AddStaticOption(&m_moveSouthOption);
-    m_rooms[1].AddRoom(Room::JoiningDirections::West, &(m_rooms[3]));
-    m_rooms[1].AddStaticOption(&m_moveWestOption);
-    m_rooms[1].AddStaticOption(&m_quitOption);
+	// Room 0 heads North to Room 1
+	m_rooms[0]->AddRoom(Room::JoiningDirections::North, m_rooms[1]);
+	m_rooms[0]->AddStaticOption(m_moveNorthOption);
+	m_rooms[0]->AddStaticOption(m_quitOption);
+	m_rooms[0]->AddDynamicOption(m_openSwordChest);
 
-    //Room 2 heads West to Room 1
-    m_rooms[2].AddRoom(Room::JoiningDirections::West, &(m_rooms[1]));
-    m_rooms[2].AddStaticOption(&m_moveWestOption);
-    m_rooms[2].AddStaticOption(&m_quitOption);
-    m_rooms[2].AddDynamicOption(&m_attackDragonOption);
+	// Room 1 heads East to Room 2, South to Room 0 and West to Room 3
+	m_rooms[1]->AddRoom(Room::JoiningDirections::East, m_rooms[2]);
+	m_rooms[1]->AddStaticOption(m_moveEastOption);
+	m_rooms[1]->AddRoom(Room::JoiningDirections::South, m_rooms[0]);
+	m_rooms[1]->AddStaticOption(m_moveSouthOption);
+	m_rooms[1]->AddRoom(Room::JoiningDirections::West, m_rooms[3]);
+	m_rooms[1]->AddStaticOption(m_moveWestOption);
+	m_rooms[1]->AddStaticOption(m_quitOption);
 
-    //Room 3 heads East to Room 1
-    m_rooms[3].AddRoom(Room::JoiningDirections::East, &(m_rooms[1]));
-    m_rooms[3].AddStaticOption(&m_moveEastOption);
-    m_rooms[3].AddStaticOption(&m_quitOption);
-    m_rooms[3].AddDynamicOption(&m_attackOrcOption);
+	// Room 2 heads West to Room 1
+	m_rooms[2]->AddRoom(Room::JoiningDirections::West, m_rooms[1]);
+	m_rooms[2]->AddStaticOption(m_moveWestOption);
+	m_rooms[2]->AddStaticOption(m_quitOption);
+	m_rooms[2]->AddDynamicOption(m_attackDragonOption);
 
-    m_player.SetCurrentRoom(&(m_rooms[0]));
+	// Room 3 heads East to Room 1
+	m_rooms[3]->AddRoom(Room::JoiningDirections::East, m_rooms[1]);
+	m_rooms[3]->AddStaticOption(m_moveEastOption);
+	m_rooms[3]->AddStaticOption(m_quitOption);
+	m_rooms[3]->AddDynamicOption(m_attackOrcOption);
+
+	m_player.SetCurrentRoom(m_rooms[0]);
 }
 
 void Game::WelcomePlayer() {
@@ -91,9 +109,9 @@ PlayerOptions Game::EvaluateInput(stringstream& playerInputStream) {
     playerInputStream >> playerInputChoice;
 
     try {
-        Option* option = m_player.GetCurrentRoom()->EvaluateInput(playerInputChoice);
-        option->Evaluate(m_player);
-        chosenOption = option->GetChosenOption();
+        Option::Pointer option = m_player.GetCurrentRoom()->EvaluateInput(playerInputChoice);
+        EvaluateVisitor evaluator{ m_player };
+        option->Visit(evaluator);
     } catch(const out_of_range&){
         cout << "I do not recognize that option, try again!\n\n";
     }
@@ -101,11 +119,7 @@ PlayerOptions Game::EvaluateInput(stringstream& playerInputStream) {
     return chosenOption;
 }
 
-void Game::HandleEvent(const Event* pEvent) {
-    if(pEvent->GetID() == QuitEvent) {
-        m_playerQuit = true;
-    }
-}
+void Game::HandleEvent(const Event* pEvent) { }
 
 void Game::RunGame() {
     new EventManager();
@@ -126,7 +140,9 @@ void Game::RunGame() {
 
         EvaluateInput(playerInputStream);
 
-        playerWon = m_dragon.IsAlive() == false && m_orc.IsAlive() == false;
+        for(auto& enemy : m_enemies) {
+            playerWon = enemy->IsAlive() == false;
+        }
     }
 
     if(playerWon == true) {
@@ -138,4 +154,8 @@ void Game::RunGame() {
 
     DetachEvent(QuitEvent, this);
     delete EventManager::GetSingletonPtr();
+}
+
+void Game::OnQuit() {
+    m_playerQuit = true;
 }

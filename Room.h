@@ -9,6 +9,8 @@
 
 class Room : public Entity {
 public:
+	using Pointer = std::shared_ptr<Room>;
+
 	enum class JoiningDirections {
 		North = 0,
 		East,
@@ -18,24 +20,24 @@ public:
 	};
 
 private:
-	using JoiningRooms = std::array<Room*, static_cast<size_t>(JoiningDirections::Max)>;
+	using JoiningRooms = std::array<Pointer, static_cast<size_t>(JoiningDirections::Max)>;
 	JoiningRooms m_pJoiningRooms;
 
-	using StaticOptions = std::map<unsigned int, Option*>;
+	using StaticOptions = std::map<unsigned int, Option::Pointer>;
 	StaticOptions m_staticOptions;
 	unsigned int m_staticOptionStartKey{ 1 };
 
-	using DynamicOptions = std::vector<Option*>;
+	using DynamicOptions = std::vector<Option::Pointer>;
 	DynamicOptions m_dynamicOptions;
 
 public:
 	Room();
 
-	void AddRoom(JoiningDirections direction, Room* pRoom);
-	Room* GetRoom(JoiningDirections direction) const;
+	void AddRoom(JoiningDirections direction, Pointer pRoom);
+	Pointer GetRoom(JoiningDirections direction) const;
 
-	Option* EvaluateInput(unsigned int playerInput);
-	void AddStaticOption(Option* option);
-	void AddDynamicOption(Option* option);
+	Option::Pointer EvaluateInput(unsigned int playerInput);
+	void AddStaticOption(Option::Pointer option);
+	void AddDynamicOption(Option::Pointer option);
 	void PrintOptions() const;
 };

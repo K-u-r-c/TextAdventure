@@ -8,8 +8,12 @@ private:
 	Chest* m_chest;
 
 public:
-	OpenChestOption(Chest* chest, const std::string& outputText)
-		: m_chest{chest}, Option(PlayerOptions::OpenChest, outputText) { }
+	OpenChestOption(const std::string& outputText)
+		: Option(PlayerOptions::OpenChest, outputText) { }
+
+	void SetChest(Chest* pChest) {
+		m_chest = pChest;
+	}
 
 	virtual void Evaluate(Player& player);
 };

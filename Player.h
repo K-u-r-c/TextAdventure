@@ -4,6 +4,7 @@
 #include <vector>
 #include "Entity.h"
 #include "Item.h"
+#include "Room.h"
 #include "Sword.h"
 
 class Room;
@@ -13,7 +14,7 @@ private:
 	using Items = std::vector<Item*>;
 	Items m_items;
 
-	Room* m_pCurrentRoom;
+	Room::Pointer m_pCurrentRoom;
 	std::string m_name;
 
 public:
@@ -58,11 +59,11 @@ public:
 		return m_name;
 	}
 
-	void SetCurrentRoom(Room* pCurrentRoom) {
-		m_pCurrentRoom = pCurrentRoom;
+	void SetCurrentRoom(Room::Pointer currentRoom) {
+		m_pCurrentRoom = currentRoom;
 	}
 
-	Room* GetCurrentRoom() const {
+	Room::Pointer GetCurrentRoom() const {
 		return m_pCurrentRoom;
 	}
 

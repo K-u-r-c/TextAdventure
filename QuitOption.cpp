@@ -14,5 +14,5 @@ namespace {
 }
 
 void QuitOption::Evaluate(Player& player) {
-	SendEvent(QuitEvent);
+	Notify<&QuitObserver::OnQuit>();
 }

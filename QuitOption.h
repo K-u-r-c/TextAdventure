@@ -1,10 +1,11 @@
 #pragma once
 
 #include "Option.h"
-#include "PlayerOptions.h"
+#include "Notifier.h"
+#include "QuitObserver.h"
 #include <iostream>
 
-class QuitOption : public Option {
+class QuitOption : public Option, public Notifier<QuitObserver> {
 private:
 	bool m_shouldQuit;
 

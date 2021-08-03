@@ -1,13 +1,26 @@
 #include "AttackEnemyOption.h"
 #include "Enemy.h"
 #include "Player.h"
+#include <array>
+#include <cassert>
 #include <iostream>
 
-AttackEnemyOption::AttackEnemyOption(Enemy* enemy, const std::string& outputText)
-	: m_enemy{enemy} , Option(PlayerOptions::AttackEnemy, outputText) { }
+namespace {
+	std::array<const char*, static_cast<size_t>(EnemyType::Max)> ENEMY_NAMES {
+		"dragon",
+		"orc"
+	};
+}
+
+
+AttackEnemyOption::AttackEnemyOption()
+	: Option(PlayerOptions::AttackEnemy, "Attack Enemy") { }
 
 void AttackEnemyOption::Evaluate(Player& player) {
-	std::cout << std::endl << "You have chosen to " << m_outputText << std::endl << std::endl;
+	assert(m_enemy);
+
+	const char* enemyName = ENEMY_NAMES[static_cast<unsigned int>(m_enemy->GetType())];
+	std::cout << std::endl << "You have chosen to attack the " << enemyName << std::endl << std::endl;
 
 	if (player.HasWeapon())	{
 		if (m_enemy->IsAlive())	{

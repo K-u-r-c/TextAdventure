@@ -1,15 +1,18 @@
 #pragma once
 
 #include "Option.h"
-
-class Enemy;
+#include "Enemy.h"
 
 class AttackEnemyOption	: public Option {
 private:
-	Enemy* m_enemy;
+	Enemy::Pointer m_enemy;
 
 public:
-	AttackEnemyOption(Enemy* enemy, const std::string& outputText);
+	AttackEnemyOption();
+
+	void SetEnemy(Enemy::Pointer enemy) {
+		m_enemy = enemy;
+	}
 
 	virtual void Evaluate(Player& player);
 };
